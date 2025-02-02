@@ -1,23 +1,21 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-#![allow(unaligned_references)]
 
 mod bindings;
 pub use bindings::*;
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use std::ffi::{CStr, CString};
     use std::ptr;
     use winapi::shared::minwindef::{BOOL, ULONG};
     use winapi::um::libloaderapi::{GetModuleHandleA, GetProcAddress};
-    use winapi::um::winnt::{LPCSTR};
-    use super::*;
+    use winapi::um::winnt::LPCSTR;
 
     #[test]
-    fn test_find_function()
-    {
+    fn test_find_function() {
         unsafe {
             let module = CString::new("kernel32.dll").unwrap();
             let function = CString::new("Sleep").unwrap();
@@ -33,8 +31,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enumerate_modules()
-    {
+    fn test_enumerate_modules() {
         unsafe {
             let h_module = DetourEnumerateModules(ptr::null_mut());
             assert_ne!(h_module as usize, 0);
@@ -42,8 +39,7 @@ mod tests {
     }
 
     #[test]
-    fn test_enumerate_exports()
-    {
+    fn test_enumerate_exports() {
         unsafe {
             // skip entry module
             let h_module = DetourEnumerateModules(ptr::null_mut());
@@ -53,8 +49,12 @@ mod tests {
         }
     }
 
-    unsafe extern "C" fn exports_cb(pContext: *mut winapi::ctypes::c_void, nOrdinal: ULONG, pszName: LPCSTR, pCode: *mut winapi::ctypes::c_void) -> BOOL
-    {
+    unsafe extern "C" fn exports_cb(
+        pContext: *mut winapi::ctypes::c_void,
+        nOrdinal: ULONG,
+        pszName: LPCSTR,
+        pCode: *mut winapi::ctypes::c_void,
+    ) -> BOOL {
         println!("pContext {:#?}", pContext);
         println!("nOrdinal {:#?}", nOrdinal);
         println!("pszName {:#?}", CStr::from_ptr(pszName));
